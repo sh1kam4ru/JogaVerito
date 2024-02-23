@@ -60,7 +60,6 @@ pyasn1==0.5.1
 pyasn1-modules==0.3.0
 pydantic==2.6.1
 pydantic_core==2.16.2
-pywin32==306
 PyYAML==6.0.1
 qdrant-client==1.7.3
 regex==2023.12.25
