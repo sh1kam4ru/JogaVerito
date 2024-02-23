@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>All About Eden Hazard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 50px;
+            background-image: url('static/images/Hazard.jpg'); 
+            background-size: cover; 
+        }
+        h1 {
+            /* color: #3498db; Change this value to the desired color */
+            color: rgba(0, 128, 255, 0.7);
+            text-shadow: 2px 2px 4px rgba(0, 0, 255, 2);
+        }
+        #questionInput {
+            width: 300px;
+            margin-bottom: 10px;
+            background-color: rgba(255, 255, 255, 0.5); /* 0.7 is the alpha (opacity) value */
+            border: 1px solid #ccc;
+            padding: 5px;
+            color: #1e1e1e
+        }
+        #questionInput::placeholder {
+            color: #313131; /* Color of the placeholder text */
+        }
+        button {
+            background-color: rgba(0, 128, 255, 0.7); /* 0.7 is the alpha (opacity) value */
+            color: #fff;
+            border: 1px;
+            padding: 8px 15px;
+            cursor: pointer;
+        }
+        #answer {
+            width: 375px;
+            height: 500px;
+            background-color: rgba(255, 255, 255, 0.5); /* 0.7 is the alpha (opacity) value */
+            padding: 10px;
+            margin-top: 10px;
+            margin: 0 auto;
+            color: rgba(0, 0, 0, 1);
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+    <h1>All About Eden Hazard</h1>
+    <input type="text" id="questionInput" placeholder="Enter your question">
+    <button onclick="submitQuestion()">Submit</button>
+    <div id="answer"></div>
+
+    <script>
+        async function submitQuestion() {
+            const questionInput = document.getElementById('questionInput');
+            const answerDiv = document.getElementById('answer');
+            
+            // Get the question from the input box
+            const question = questionInput.value;
+
+            // Make a request to your FastAPI backend
+            const response = await fetch(`http://127.0.0.1:8000/ask?question=${encodeURIComponent(question)}`);
+            const data = await response.json();
+
+            // Display the answer
+            answerDiv.innerHTML = `${data.answer} <br><br>Sources:<br>`;
+
+            // Display the sources as hyperlinks
+            for (const source of data.sources) {
+                const link = document.createElement('a');
+                link.href = source;
+                link.textContent = source;
+                link.target = '_blank';  // Open the link in a new tab
+                answerDiv.appendChild(link);
+                answerDiv.appendChild(document.createElement('br'));
+            }
+        }
+    </script>
+</body>
+</html>
