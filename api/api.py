@@ -11,7 +11,7 @@ import re
 import os
 from sentence_transformers import SentenceTransformer
 
-model = SentenceTransformer("BAAI/bge-base-en-v1.5")
+model = SentenceTransformer("BAAI/bge-small-en-v1.5")
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
 app.mount("/static", StaticFiles(directory="static"), name="static")
