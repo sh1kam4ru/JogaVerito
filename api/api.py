@@ -2,7 +2,6 @@ from fastapi import FastAPI, Query, Request
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
-from InstructorEmbedding import INSTRUCTOR
 from qdrant_client import QdrantClient
 from qdrant_client.http import models
 from langchain_google_genai import GoogleGenerativeAI
@@ -10,19 +9,20 @@ from langchain_core.prompts import PromptTemplate
 from langchain.chains import LLMChain
 import re
 import os
+from sentence_transformers import SentenceTransformer
 
-model = INSTRUCTOR('hkunlp/instructor-xl')
+model = SentenceTransformer("BAAI/bge-base-en-v1.5")
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
 app.mount("/static", StaticFiles(directory="static"), name="static")
 google_api_key = os.environ.get('GEMINI_API_KEY')
 qdrant_url = os.environ.get('QDRANT_URL')
 qdrant_api_key = os.environ.get('QDRANT_API_KEY')
-collection = os.environ.get('QDRANT_COLLECTION')
+collection = "EdenHazard"
 
 def build_context(query):
     instruction = "Represents a football information: "
-    embeddings = model.encode([[instruction,query]])
+    embeddings = model.encode([instruction+query], normalize_embeddings=True)
     client = QdrantClient(
         url=qdrant_url, 
         api_key=qdrant_api_key,
@@ -33,6 +33,7 @@ def build_context(query):
     all_sources = []
     for i in range(len(hits)):
         hit = hits[i]
+        print(hit.score * hit.score)
         context += f"ID: {i+1} \nInformation: {hit.payload['stat']} \n\n"
         all_sources.append(hit.payload["source"])
 
