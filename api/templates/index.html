@@ -62,7 +62,7 @@
             const question = questionInput.value;
 
             // Make a request to your FastAPI backend
-            const response = await fetch(`http://joga-verito.vercel.app/ask?question=${encodeURIComponent(question)}`);
+            const response = await fetch(`https://joga-verito.vercel.app/ask?question=${encodeURIComponent(question)}`);
             const data = await response.json();
 
             // Display the answer
