@@ -15,9 +15,9 @@ from pathlib import Path
 load_dotenv()
 
 app = FastAPI()
-templates = Jinja2Templates(directory="templates")
 BASE_DIR = Path(__file__).parent.resolve()
 print(BASE_DIR)
+templates = Jinja2Templates(directory=Path(BASE_DIR, 'static'))
 app.mount("/static", StaticFiles(directory=Path(BASE_DIR, 'static')), name="static")
 
 google_api_key = os.environ.get('GOOGLE_API_KEY')
