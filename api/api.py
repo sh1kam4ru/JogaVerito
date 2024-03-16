@@ -4,30 +4,34 @@ from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from qdrant_client import QdrantClient
 from qdrant_client.http import models
-from langchain_google_genai import GoogleGenerativeAI
+from langchain_google_genai import GoogleGenerativeAI, GoogleGenerativeAIEmbeddings
 from langchain_core.prompts import PromptTemplate
 from langchain.chains import LLMChain
 import re
 import os
-from sentence_transformers import SentenceTransformer
+from dotenv import load_dotenv
+load_dotenv()
 
-model = SentenceTransformer("BAAI/bge-small-en-v1.5")
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
 app.mount("/static", StaticFiles(directory="static"), name="static")
-google_api_key = os.environ.get('GEMINI_API_KEY')
+
+google_api_key = os.environ.get('GOOGLE_API_KEY')
 qdrant_url = os.environ.get('QDRANT_URL')
 qdrant_api_key = os.environ.get('QDRANT_API_KEY')
 collection = "EdenHazard"
 
 def build_context(query):
-    instruction = "Represents a football information: "
-    embeddings = model.encode([instruction+query], normalize_embeddings=True)
+    global model
+    global qdrant_url
+    global qdrant_api_key
+    model = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
+    embeddings = model.embed_query(query)
     client = QdrantClient(
         url=qdrant_url, 
         api_key=qdrant_api_key,
     )
-    hits = client.search(collection_name=collection, query_vector=embeddings[0], limit=5)
+    hits = client.search(collection_name=collection, query_vector=embeddings, limit=5)
     threshold_score = 0.15
     context = ""
     all_sources = []
@@ -59,7 +63,26 @@ def extract_sources(ids_used, all_sources):
 
     return sources_used
 
+async def query_checker(query):
+    global google_api_key
+    try:
+        llm = GoogleGenerativeAI(model="gemini-pro", google_api_key=google_api_key)
+        prompt_template = """
+        You are football Q&A bot. You have expert knowledge regarding Eden Hazard (often referred to as Eden or Hazard or Azza or Azzar) and his footballing career. You DO NOT know anything else.
+        Consider the following question: {query}. 
+        If the question is regarding Eden Hazard or Hazard AND his football career, say 'yes', otherwise say 'no'. You must strictly say just 'yes' or 'no' and nothing else.
+        """
+        prompt = PromptTemplate(
+            input_variables=["query"], template=prompt_template
+        )
+        llmchain = LLMChain(llm=llm, prompt=prompt)
+        result = llmchain.run({"query": query})
+        return result
+    except Exception as e:
+        raise Exception(f"Error: {str(e)}")
+
 async def llm_ans(query):
+    global google_api_key
     try:
         context, all_sources = build_context(query)
         llm = GoogleGenerativeAI(model="gemini-pro", google_api_key=google_api_key)
@@ -75,6 +98,10 @@ async def llm_ans(query):
         return answer, sources_used
     except Exception as e:
         raise Exception(f"Error: {str(e)}")
+    
+@app.get("/health")
+def home():
+    return {"health_check": "OK"}
 
 @app.get("/")
 def read_html(request: Request):
@@ -82,5 +109,11 @@ def read_html(request: Request):
 
 @app.get("/ask")
 async def wizard(question: str = Query(..., title="Your Question", description="Enter your question")):
-    ans, sources = await llm_ans(question)
+    print(question)
+    result = await query_checker(question)
+    if "yes".lower() in result.lower():
+        ans, sources = await llm_ans(question)
+    else:
+        ans = "I'm sorry, I do not know the answer to this question."
+        sources = []
     return {"answer": ans, "sources": sources}
