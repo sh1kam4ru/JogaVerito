@@ -10,11 +10,15 @@ from langchain.chains import LLMChain
 import re
 import os
 from dotenv import load_dotenv
+from pathlib import Path
+
 load_dotenv()
 
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
-app.mount("/static", StaticFiles(directory="static"), name="static")
+BASE_DIR = Path(__file__).parent.resolve()
+print(BASE_DIR)
+app.mount("/static", StaticFiles(directory=Path(BASE_DIR, 'static')), name="static")
 
 google_api_key = os.environ.get('GOOGLE_API_KEY')
 qdrant_url = os.environ.get('QDRANT_URL')
