@@ -44,6 +44,8 @@
             margin: 0 auto;
             color: rgba(0, 0, 0, 1);
             text-align: left;
+            overflow-y: auto;
+            word-wrap: break-word;
         }
         a:link {
           color: green;
@@ -58,7 +60,7 @@
         }
 
         a:hover {
-          color: red;
+          color: blue;
           background-color: transparent;
           text-decoration: underline;
         }
@@ -76,13 +78,17 @@
         Built by <a href="https://twitter.com/Cfc_Shikamaru" target="_blank">Cfc_Shikamaru</a>
     </div>
     <input type="text" id="questionInput" placeholder="Enter your question">
-    <button onclick="submitQuestion()">Submit</button>
+    <button id="submitButton" onclick="submitQuestion()">Submit</button>
     <div id="answer"></div>
 
     <script>
         async function submitQuestion() {
             const questionInput = document.getElementById('questionInput');
             const answerDiv = document.getElementById('answer');
+            const submitButton = document.getElementById('submitButton');
+            
+            // Disable the submit button
+            submitButton.disabled = true;
             
             // Get the question from the input box
             const question = questionInput.value;
@@ -114,6 +120,9 @@
                 sourceDiv.appendChild(link);
                 answerDiv.appendChild(sourceDiv);
             }
+
+            // Enable the submit button after displaying the answer
+            submitButton.disabled = false;
         }
     </script>
 </body>
