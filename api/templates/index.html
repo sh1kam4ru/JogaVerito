@@ -95,13 +95,24 @@
             answerDiv.innerHTML = `${data.answer} <br><br>Sources:<br>`;
 
             // Display the sources as hyperlinks
+            // for (const source of data.sources) {
+            //     const link = document.createElement('a');
+            //     link.href = source;
+            //     link.textContent = source;
+            //     link.target = '_blank';  // Open the link in a new tab
+            //     answerDiv.appendChild(link);
+            //     answerDiv.appendChild(document.createElement('br'));
+            // }
             for (const source of data.sources) {
                 const link = document.createElement('a');
                 link.href = source;
                 link.textContent = source;
                 link.target = '_blank';  // Open the link in a new tab
-                answerDiv.appendChild(link);
-                answerDiv.appendChild(document.createElement('br'));
+                
+                // Create a container div for each source hyperlink
+                const sourceDiv = document.createElement('div');
+                sourceDiv.appendChild(link);
+                answerDiv.appendChild(sourceDiv);
             }
         }
     </script>
