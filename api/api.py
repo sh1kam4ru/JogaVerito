@@ -24,6 +24,7 @@ google_api_key = os.environ.get('GOOGLE_API_KEY')
 qdrant_url = os.environ.get('QDRANT_URL')
 qdrant_api_key = os.environ.get('QDRANT_API_KEY')
 collection = "EdenHazard"
+visit_count = 0
 
 def build_context(query):
     global model
@@ -87,6 +88,8 @@ async def query_checker(query):
 
 async def llm_ans(query):
     global google_api_key
+    global visit_count
+    visit_count += 1
     try:
         context, all_sources = build_context(query)
         llm = GoogleGenerativeAI(model="gemini-pro", google_api_key=google_api_key)
@@ -121,3 +124,8 @@ async def wizard(question: str = Query(..., title="Your Question", description="
         ans = "I'm sorry, I do not know the answer to this question."
         sources = []
     return {"answer": ans, "sources": sources}
+
+@app.get("/metrics")
+def visit_counter():
+    global visit_count
+    return {"visits": visit_count}
