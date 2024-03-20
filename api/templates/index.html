@@ -10,14 +10,16 @@
             text-align: center;
             margin: 0;
             padding: 0;
-            background-image: url('static/images/Hazard.jpg');
+            background-image: url('static/images/Hazard.jpg'); 
+            background-size: cover;
         }
 
-        .container {
-            max-width: 800px;
+        .output-container {
             margin: 0 auto;
-            padding: 20px;
-            background-color: rgba(255, 255, 255, 0.7); /* Background color with opacity */
+            padding: 5px;
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
         }
 
         h1 {
@@ -37,7 +39,7 @@
         }
 
         #questionInput {
-            width: 70%;
+            width: 40%;
             padding: 10px;
             border: 1px solid #ccc;
             border-radius: 5px 0 0 5px;
@@ -53,10 +55,9 @@
         }
 
         #answer {
-            margin-top: 20px;
-            padding: 10px;
-            background-color: rgba(255, 255, 255, 0.5);
-            color: rgba(0, 0, 0, 1);
+            width: 48%;
+            min-height: 300px; /* Set a minimum height for the answer container */
+            background-color: rgba(255, 255, 255, 0.7);
             text-align: left;
             overflow-y: auto;
             word-wrap: break-word;
@@ -64,15 +65,15 @@
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>All About Eden Hazard</h1>
-        <div class="built-by">
-            Built by <a href="https://twitter.com/Cfc_Shikamaru" target="_blank">Cfc_Shikamaru</a>
-        </div>
-        <div class="input-container">
-            <input type="text" id="questionInput" placeholder="Enter your question">
-            <button id="submitButton" onclick="submitQuestion()">Submit</button>
-        </div>
+    <h1>All About Eden Hazard</h1>
+    <div class="built-by">
+        Built by <a href="https://twitter.com/Cfc_Shikamaru" target="_blank">Cfc_Shikamaru</a>
+    </div>
+    <div class="input-container">
+        <input type="text" id="questionInput" placeholder="Enter your question">
+        <button id="submitButton" onclick="submitQuestion()">Submit</button>
+    </div>
+    <div class="output-container">
         <div id="answer"></div>
     </div>
 
