@@ -48,6 +48,28 @@ def build_context(query):
 
     return context, all_sources
 
+def build_agile_context(query):
+    global model
+    global qdrant_url
+    global qdrant_api_key
+    model = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
+    embeddings = model.embed_query(query)
+    client = QdrantClient(
+        url=qdrant_url, 
+        api_key=qdrant_api_key,
+    )
+    hits = client.search(collection_name="Agile", query_vector=embeddings, limit=10)
+    threshold_score = 0.4
+    context = ""
+    all_sources = []
+    for i in range(len(hits)):
+        hit = hits[i]
+        # print(hit.score * hit.score)
+        context += f"{i+1}. {hit.payload['text']} \n"
+        all_sources.append(hit.payload["pagenum"])
+
+    return context, all_sources
+
 def partition_string(input_string):
     print(input_string)
     sentences = input_string.split("^^")
@@ -106,6 +128,29 @@ async def llm_ans(query):
     except Exception as e:
         raise Exception(f"Error: {str(e)}")
     
+async def agile_llm(query):
+    global google_api_key
+    try:
+        context, all_sources = build_agile_context(query)
+        llm = GoogleGenerativeAI(model="gemini-pro", google_api_key=google_api_key)
+        prompt_template = """
+        You are an expert SAFe Agilist. A SAFe Agilist is able to apply Lean, Agile, and the Product Development Flow principles in a constructive manner, in order to improve productivity, employee satisfaction, time-to-market, and quality.
+        This person knows how to introduce and apply SAFe in a company and how to take advantage of its benefits in order to reach their desired goals.
+        As a SAFe Agilist, you come to understand the interaction between Agile teams, Agile programs, and Agile Portfolio management.
+        {context} \n
+        Using the information given above, answer the following question: {query}.
+        Construct a crisp, concise and complete answer using not more than 100 words. Use a fullstop(.) after
+        each sentence. Don't say something that is not related to the question.
+        """
+        prompt = PromptTemplate(
+            input_variables=["context", "query"], template=prompt_template
+        )
+        llmchain = LLMChain(llm=llm, prompt=prompt)
+        result = llmchain.run({"context": context, "query": query})
+        return result, all_sources
+    except Exception as e:
+        raise Exception(f"Error: {str(e)}")
+    
 @app.get("/health")
 def home():
     return {"health_check": "OK"}
@@ -113,6 +158,10 @@ def home():
 @app.get("/")
 def read_html(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
+
+@app.get("/agile")
+def read_agile_html(request: Request):
+    return templates.TemplateResponse("agile_page.html", {"request": request})
 
 @app.get("/ask")
 async def wizard(question: str = Query(..., title="Your Question", description="Enter your question")):
@@ -129,3 +178,11 @@ async def wizard(question: str = Query(..., title="Your Question", description="
 def visit_counter():
     global visit_count
     return {"visits": visit_count}
+
+@app.get("/askagile")
+async def agile_wizard(question: str = Query(..., title="Your Question", description="Enter your question")):
+    ans = ""
+    page_nums = []
+    ans, page_nums = await agile_llm(question)
+    return {"answer": ans, "pages": page_nums}
+

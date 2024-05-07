@@ -1,3 +1,9 @@
 /football/** 
 /football
 /api/__pycache__
+data.py
+qdrant.py
+.env
+.dockerignore
+Dockerfile
+__pycache__
